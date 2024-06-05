@@ -3,3 +3,7 @@
 ## Resources
 - [Programming Massively Parallel Processors - 3rd Edition](http://gpu.di.unimi.it/books/PMPP-3rd-Edition.pdf)
 - [AUB Spring 2021 El Hajj Programming Massively Parallel Processors](https://www.youtube.com/playlist?list=PLRRuQYjFhpmubuwx-w8X964ofVkW1T8O4)
+
+- [An Easy Introduction to CUDA C and C++ - 2012 blog](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)
+- [RTFM](https://docs.nvidia.com/cuda/)
+- [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
