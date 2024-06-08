@@ -1,5 +1,3 @@
-#include <time.h>
-
 __host__ __device__ float f(float a, float b){
     return a + b;
 }
