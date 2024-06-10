@@ -1,5 +1,6 @@
 #define TILE_DIM 32 // number of threads in a tile
 
+//the tiled matmul kernel is twice as fast as the regular matmul kernel
 __global__ void mm_kernel(float *A, float *B, float *C, unsigned int N){
     // assign noe thread to each element in the output matrix C
     unsigned int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -56,4 +57,25 @@ void mm_gpu(float *A, float *B, float *C, unsigned int N){
     cudaFree(B_d);
     cudaFree(C_d);
     cudaDeviceSynchronize();
+}
+
+//sequential version run on CPU
+//tiling on CPU is also twice as fast as regular just like regular GPU speedup
+void mm_cpu(float *A, float *B, float *C, unsigned int N){
+    for (unsigned int rowTile = 0; rowTile < N/TILE_DIM; ++rowTile){
+        for(unsigned int colTile = 0; colTile < N/TILE_DIM; ++colTile){
+            for(unsigned int iTile = 0; iTile < N/TILE_DIM; ++iTile){
+                for(unsigned int row = rowTile*TILE_DIM; row < (rowTile + 1)*TILE_DIM; ++row){
+                    for(unsigned int col = colTile*TILE_DIM; col < (colTile +1)*TILE_DIM; ++col){
+                        float sum = 0.0f;
+                        for(unsigned int i = iTile*TILE_DIM; i < (iTile + 1)*TILE_DIM; ++i){
+                            sum += A[row*N + i]*B[i*N + col];
+                        }
+                        if(iTile == 0) C[row*N + col] = sum;
+                        else C[row*N + col] += sum;
+                    }
+                }
+            }
+        }
+    }
 }
