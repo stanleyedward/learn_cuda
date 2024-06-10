@@ -7,6 +7,9 @@ __global__ void mm_kernel(float *A, float *B, float *C, unsigned int N){
     unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
 
     //declare shared memory 2D arary
+    // shared memory can be statically and dynamically allocated
+    // extern __shared__ A_s[]; <-- dynamic allocation of shared mem
+    // kernel <<<numBlocks, numThreadsPerBlock, sharedMemPerBlock >>> (...) for exec config in shared mem
     __shared__ float A_s[TILE_DIM][TILE_DIM];
     __shared__ float B_s[TILE_DIM][TILE_DIM];
 
