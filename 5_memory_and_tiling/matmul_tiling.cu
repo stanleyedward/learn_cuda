@@ -18,8 +18,11 @@ __global__ void mm_kernel(float *A, float *B, float *C, unsigned int N){
 
     // assign values read from threads into shared mem
     for(unsigned int tile = 0; tile < N/TILE_DIM; ++tile){
-        A_s[threadIdx.y][threadIdx.x] = A[row*N + tile*TILE_DIM + threadIdx.x];
-        B_s[threadIdx.y][threadIdx.x] = B[(tile*TILE_DIM + threadIdx.y)*N + col];
+        // boundry conditions
+        if((row < N) && (tile * TILE_DIM + threadIdx.x) < N){
+            A_s[threadIdx.y][threadIdx.x] = A[row*N + tile*TILE_DIM + threadIdx.x];}
+        if ((tile*TILE_DIM + threadIdx.y) < N && col < N){
+            B_s[threadIdx.y][threadIdx.x] = B[(tile*TILE_DIM + threadIdx.y)*N + col];}
         __syncthreads();
 
         for(unsigned int i = 0; i < TILE_DIM; ++i){
@@ -28,7 +31,9 @@ __global__ void mm_kernel(float *A, float *B, float *C, unsigned int N){
         __syncthreads();
     }
 
-    C[row*N + col] = sum;
+    if ((row < N) && (col < N)){
+        C[row*N + col] = sum;
+    }
 
 }
 
