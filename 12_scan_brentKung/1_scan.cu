@@ -4,6 +4,7 @@ __global__ void scan_kernel(float *input, float *output, float *partialSums, uns
     unsigned int segment = blockIdx.x * blockDim.x * 2;
     __shared__ float buffer_s[BLOCK_DIM * 2];
     // load data in 2 parts so its memory coalesced
+    // every thread resposible for 2 elements
     buffer_s[threadIdx.x] = input[segment + threadIdx.x];
     buffer_s[threadIdx.x + BLOCK_DIM] = input[segment + threadIdx.x + BLOCK_DIM];
     __syncthreads();
@@ -20,10 +21,22 @@ __global__ void scan_kernel(float *input, float *output, float *partialSums, uns
     }
 
     // post-rediction step
-    for(unsigned int stride = BLOCK_DIM/2; stride >= 1; stride /= 2){
-        
+    for (unsigned int stride = BLOCK_DIM / 2; stride >= 1; stride /= 2)
+    {
+        unsigned int i = (threadIdx.x + 1) * 2 * stride - 1;
+        if ((i + stride) < BLOCK_DIM * 2)
+        {
+            buffer_s[i + stride] = buffer_s[i + stride] + buffer_s[i];
+        }
+        __syncthreads();
     }
-    
+    if (threadIdx.x == 0)
+    {
+        partialSums[blockIdx.x] = buffer_s[2 * BLOCK_DIM - 1];
+    }
+    // each thread stores 2 output values
+    output[segment + threadIdx.x] = buffer_s[threadIdx.x];
+    output[segment + threadIdx.x + BLOCK_DIM] = buffer_s[threadIdx.x + BLOCK_DIM];
 }
 
 __global__ void add_kernel(float *output, float *partialSums, unsigned int N)
