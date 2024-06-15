@@ -29,7 +29,7 @@ problem:
 - doubleBUffering is not needed as dont write and read the same element in the same iterations therefore single iteration is okay
 - control divergence is a problem in brentKung unlike koggeStone
 
-## SOlution to minimize control divergence
+## Solution to minimize control divergence
 - do not assign threads to specific data elements
 - re-index threads on every tieration to differnet elements(general approach to reduce control divergence)
 
@@ -58,7 +58,7 @@ problem:
 - if the resources are insufficent and the hardware serializes the threadblocks, it may incur ovvrehead unncescessarily.
 - therefore we serialize it ourselves by applying thread coarsening
 
-## SOlution to low work efficiency is Thread coarsening
+## Solution to low work efficiency is Thread coarsening
 - in the context of scan, is via segmented scan
 - ie each thread scans a segment sequentially (which is more work efficeint)
-- 
+-  only scan partial sums of each segment in parallel
