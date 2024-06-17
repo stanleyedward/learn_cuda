@@ -1,10 +1,27 @@
 #include "common.h"
+#define BLOCK_DIM 1024
 __global__ void histogram_kernel(unsigned char *image, unsigned int *bins, unsigned int width, unsigned int height)
 {
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < width * height){
+    __shared__ unsigned int histogram_s[NUM_BINS];
+    // assign 0 to all px values in the histogram
+    if (threadIdx.x < NUM_BINS)
+    {
+        histogram_s[threadIdx.x] = 0;
+    }
+    __syncthreads();
+
+    if (i < width * height)
+    {
         unsigned char b = image[i];
-        atomicAdd(&bins[b], 1);
+        atomicAdd(&histogram_s[b], 1);
+    }
+    __syncthreads();
+
+    // commit to global histogram copy
+    if (threadIdx.x < NUM_BINS)
+    {
+        atomicAdd(&bins[threadIdx.x], histogram_s[threadIdx.x]);
     }
 }
 

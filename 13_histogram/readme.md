@@ -30,6 +30,7 @@ assume thread 0 and thread 1 in the SAME warp try to acquire the same lock
 - thread 1 -> waiting for thread 0 to release lock
 - thread 0 -> waits for thread 1 to complete previous instruction (SIMD model)
 as all threads in a warp follow SIMD
+- we add a lock to each bin.
 
 ### Solution in GPU
 - Atomic OPerations: opers on GPU that perform read-modify-write with a single ISA instruction(intrinsics).
@@ -39,3 +40,24 @@ as all threads in a warp follow SIMD
 Types of atomic operations in CUDA.
 - atomic add: T atomicAdd(T* address, T valToAdd)
 - sub, min, max, inc, dec, and, or , xor, exchnage, commpare, swap.
+
+### optmization: privatization
+- atomic operations on global memory have high latency
+- as we need to wait for both read and write to complete not only modify
+- wait if there are othre threads accessing the same location
+
+- privatization is commonly used when different threads contend on a shared output.
+- here create a privation copy of the histogram for each thread block
+- each thread block will update its private copy of the histogram.
+- after the threadblock is done executing
+- they can commit its private copy histogram to the global copy atomically.
+
+- privatization only works for assosiative and commutative operations
+
+- Advantages of privatization:\
+1. reduces contention in global copy
+2. if output is small enoguh private copy can be in shared memory.
+
+### Thread Coarsening
+- the price paid of parallelization here is: having more and more threadblocks in parallel, we have more and more private copies needed to be commmited to global copy.
+- if these thread blocks are parallel its worth it, but if its gonna be serialized its worth to have fewer thread blocks, and fewer private copies.
