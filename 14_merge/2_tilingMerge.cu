@@ -68,7 +68,7 @@ __global__ void merge_kernel(float *A, float *B, float *C, unsigned int m, unsig
 
     __shared__ unsigned int iBlock;
     __shared__ unsigned int iNextBlock;
-    if (threadIdx.x == 0)
+    if (threadIdx.x == 0)//only 1 thread to get iblock for the entire block
     {
         iBlock = coRank(A, B, m, n, kBlock);
         iNextBlock = coRank(A, B, m, n, kNextBlock);
@@ -92,7 +92,7 @@ __global__ void merge_kernel(float *A, float *B, float *C, unsigned int m, unsig
     }
     __syncthreads();
 
-    // merge in shared memory
+    // merge block in shared memory
     __shared__ float C_s[ELEM_PER_BLOCK];
     unsigned int k = threadIdx.x * ELEM_PER_THREAD;
     if (k < mBlock + nBlock)
