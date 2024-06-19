@@ -19,4 +19,5 @@ very memory bound kernel
     - one thread in block does c-rank to find block's input segments
 - do the per thread co-rank and merge in shared memory.
     - non coalesced accesses performed in shared memory
+- store from shared memory to global memory in a coalesced way.
     
