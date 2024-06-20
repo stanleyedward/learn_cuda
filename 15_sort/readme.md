@@ -61,4 +61,6 @@ by increasing radix:
 - we have Block granularity
 
 ## Merge Sort
-
+- radix sort is not applicable to all kinds of keys.(incase elements hve differnt # of bits).
+- an alterative `comparision-based sort` that is highly amenable to to parallelization is `merge sort`.
+- uses `divide and conquer`
