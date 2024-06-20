@@ -20,4 +20,10 @@ very memory bound kernel
 - do the per thread co-rank and merge in shared memory.
     - non coalesced accesses performed in shared memory
 - store from shared memory to global memory in a coalesced way.
+
+#### threadcoarsening
+thread coarsening already implemented as:
+- every thread is assigned a segment of the output.
+- instead of assigned 1 element per thread (segment length 1), but its less intuitive.
+- by assigning multiple elements to a single thread we amortize the cost of parallelizing ie having to perform binary search over a larger input segment.
     
