@@ -50,8 +50,19 @@ void spmv_coo_gpu(COOMatrix cooMatrix, float *inVector, float *outVector);
 
 //     unsigned int *rowIds; // array of row indices for the non zero elements
 //     unsigned int *colIds; // array of col indices for the non zero elements
-//     float* values;
+//     float* values; // array of non zero values
 //     COOMatrix() : numRows(0), numCols(0), numNonzeros(0), rowIds(nullptr), colIds(nullptr), values(nullptr) {} float *values;        // array of values for non-zero elements
 // };
+struct CSRMatrix
+{
+    unsigned int numRows;
+    unsigned int numCols;
+    unsigned int numNonzeros;
 
+    unsigned int *rowPtrs;
+    unsigned int *colIdxs;
+    float *values;
+};
+
+void spmv_cssr_gpu(CSRMatrix csrMatrix, float *inVector, float *outVector);
 #endif // COMMON_H
