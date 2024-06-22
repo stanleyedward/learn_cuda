@@ -42,5 +42,33 @@ we are working with unwieghted and undirected graphs
 - best parallization approach depends on the structure of the graph.
 - vertex centric bottomup and edge centric appraches are better on high degree graphs ex: social network graphs.
     - as they are better at dealing with load imbalance
-- vertex centric topdown approach is actually better on low degree graphs eg. Map graph.
+- vertex centric topdown approach is actually better on low degree graphs eg. geographic map graph.
+    - vertex centric topdown performs much better here, as in low degree graphs -> # of vertices we visit each iteration is small as we have a low degree.
+
+    - further optimziations: launch more threads to prcoess neighbors of high-degree vertices.(later)
+
+
+### similarities between BFS and SpMV
+
+ ![alt text](similarities.png)
+
+ - linear algebric forumlation of graph problems
+ - witha few tweaks BFS can be formulated EXACTLY as SpMV
+ - infact many graph problems canbe formulated din terms of sparse linear algebra computations
+
+- Advantage:
+    - u can leverage mature high performance well-optimized libraries for linear algebra.
+    - linear algebra operations are easy to parallize
+- Disadvantage
+    - not always the most efficient way to solve a graph problem.
+
+### Redundant work
+- in all our appraches to far, we have redundant work.
+strengths: easy to implement, highly paralle, no synchronization across threads.\
+weakness: redundant work, many threads will find that their vertex or edge is not relevant for this iteration and just exit.
+
+
+
+
+    
 
