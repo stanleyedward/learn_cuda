@@ -1,6 +1,43 @@
 #include "common.h"
-__global__ void bfs_kernel(CSRGraph csrGraph, unsigned int *level, unsigned int *newVertexVisited, unsigned int currLevel)
+__global__ void bfs_bottomup_kernel(CSRGraph csrGraph, unsigned int *level, unsigned int *newVertexVisited, unsigned int currLevel)
 {
+    unsigned int vertex = blockIdx.x * blockDim.x + threadIdx.x;
+    if (vertex < csrGraph.numVertices)
+    {
+        if (level[vertex] == UINT_MAX)
+        {
+            for (unsigned int edge = csrGraph.srcPtrs[vertex]; edge < csrGraph.srcPtrs[vertex + 1]; ++edge)
+            {
+                unsigned int neighbour = csrGraph.dst[edge];
+                if (level[neighbour] == currLevel - 1)
+                {
+                    level[vertex] = currLevel;
+                    *newVertexVisited = 1;
+                    break; // exit loop early if neighbour as been found
+                }
+            }
+        }
+    }
+}
+
+__global__ void bfs_topdown_kernel(CSRGraph csrGraph, unsigned int *level, unsigned int *newVertexVisited, unsigned int currLevel)
+{
+    unsigned int vertex = blockDim.x * blockIdx.x + threadIdx.x;
+    if (vertex < csrGraph.numVertices)
+    {
+        if (level[vertex] == currLevel - 1)
+        {
+            for (unsigned int edge = csrGraph.srcPtrs[vertex]; edge < csrGraph.srcPtrs[vertex + 1]; ++edge)
+            {
+                unsigned int neighbour = csrGraph.dst[edge];
+                if (level[neighbour] == UINT_MAX)
+                {
+                    level[neighbour] = currLevel;
+                    *newVertexVisited = 1;
+                }
+            }
+        }
+    }
 }
 
 void bfs_gpu(CSRGraph csrGraph, unsigned int srcVertex, unsigned int *level)
@@ -33,7 +70,14 @@ void bfs_gpu(CSRGraph csrGraph, unsigned int srcVertex, unsigned int *level)
     {
         newVertexVisited = 0;
         cudaMemcpy(newVertexVisited_d, &newVertexVisited, sizeof(unsigned int), cudaMemcpyHostToDevice);
-        bfs_kernel<<<numBlocks, numThreadsPerBlock>>>(csrGraph_d, level_d, newVertexVisited_d, currLevel);
+        if (currLevel == 1)
+        {
+            bfs_topdown_kernel<<<numBlocks, numThreadsPerBlock>>>(csrGraph_d, level_d, newVertexVisited_d, currLevel);
+        }
+        else
+        {
+            bfs_bottomup_kernel<<<numBlocks, numThreadsPerBlock>>>(csrGraph_d, level_d, newVertexVisited_d, currLevel);
+        }
         cudaMemcpy(&newVertexVisited, newVertexVisited_d, sizeof(unsigned int), cudaMemcpyDeviceToHost);
     }
     cudaDeviceSynchronize();

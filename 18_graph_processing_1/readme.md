@@ -25,5 +25,22 @@ we are working with unwieghted and undirected graphs
     - application: Triangle counting, k-clique decomposition
  
 ### BFS breadth-first-search
-- Vertix center has 2 approaches
-    - top-down
+- Vertix centeric has 3 approaches
+    - top-down: assign thread to every parent vertex in teh BFS Tree - kernel time is quite slow
+    - bottom-up: assign thread to every potential child vertex in the BFS tree. - *faster than top-down as loops can break early if the vertex finds a neighbour.
+    - direction optimized - Hybrid approach: starts topdown then switches the the bottom up approach
+        - as bottomm up is inefficient in the beginning most vertices will search all neighbours.
+        - at the beginnning the top down will just loop over the neighbouts of the first source vertex. being *less efficient to find the first level vertices.
+
+- Edge Centric:
+    - 1 thread per edge, check if source vertex of the edge was in the prev lvl, then add the destination vertx to the current lvl.
+    - has no for loops
+    - better than top down and bottom up but not than direction optimize in our case*.
+
+### dataset implications
+> - *our example were testing on a high degree graph(eg social network graph).
+- best parallization approach depends on the structure of the graph.
+- vertex centric bottomup and edge centric appraches are better on high degree graphs ex: social network graphs.
+    - as they are better at dealing with load imbalance
+- vertex centric topdown approach is actually better on low degree graphs eg. Map graph.
+
