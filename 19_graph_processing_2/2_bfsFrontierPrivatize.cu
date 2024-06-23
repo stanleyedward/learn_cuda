@@ -1,6 +1,16 @@
 #include "common.h"
+#define LOCAL_QUEUE_SIZE 2048 // 256 threads per block, 2048 threads in total or 8 blocks, and we have 96KB in a v100 GPU, therefore we want each thread block not to use more than 12kb of shard memory.
+
 __global__ void bfs_kernel(CSRGraph csrGraph, unsigned int *level, unsigned int *prevFrontier, unsigned int *currFrontier, unsigned int numPrevFrontier, unsigned int *numCurrFrontier, unsigned int currLevel)
 {
+    __shared__ unsigned int currFrontier_s[LOCAL_QUEUE_SIZE];
+    __shared__ unsigned int numCurrFrontier_s;
+    if (threadIdx.x == 0)
+    {
+        numCurrFrontier_s = 0;
+    }
+    __syncthreads();
+
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numPrevFrontier)
     {
@@ -9,25 +19,36 @@ __global__ void bfs_kernel(CSRGraph csrGraph, unsigned int *level, unsigned int 
         for (unsigned int edge = csrGraph.srcPtrs[vertex]; edge < csrGraph.srcPtrs[vertex + 1]; ++edge)
         {
             unsigned int neighbour = csrGraph.dst[edge];
-            // DO NOT DO THIS
-            // if (level[neighbour] == UINT_MAX)
-            // {
-            //     // another raise condition multiple threads can add the same vertex to the frontier from this line below, as many threads may see this vertex has UINT_MAX and not currLevel
-            //     // therefore we need to atomic comapre and swap.
-            //     level[neighbour] = currLevel;
-
-            //     // raise condition
-            //      unsigned int currFrontierIdx = (*numCurrFrontier)++; //therefore use single ISA atomic oper
-            //     currFrontier[currFrontierIdx] = neighbour;
-            // }
-
-            // using atomic operations to prevent raiseconditions for reasons above
             if (atomicCAS(&level[neighbour], UINT_MAX, currLevel) == UINT_MAX) // atomicCAS returns the old value
             {
-                unsigned int currFrontierIdx = atomicAdd(numCurrFrontier, 1);
-                currFrontier[currFrontierIdx] = neighbour;
+                unsigned int currFrontierIdx_s = atomicAdd(&numCurrFrontier_s, 1);
+
+                // we may reach max limit of idx in the currFrontier_s as we only have 2048 statically alloted
+                if (currFrontierIdx_s < LOCAL_QUEUE_SIZE)
+                {
+                    currFrontier_s[currFrontierIdx_s] = neighbour;
+                }
+                else
+                {
+                    numCurrFrontier_s = LOCAL_QUEUE_SIZE;
+                    unsigned int currFrontierIdx = atomicAdd(numCurrFrontier, 1);
+                    currFrontier[currFrontierIdx] = neighbour;
+                }
             }
         }
+    }
+    __syncthreads();
+    // commit private queue to the global queue
+    __shared__ int currFrontierStartIdx;
+    // we only want 1 thread to do this
+    if (threadIdx.x == 0)
+    {
+        currFrontierStartIdx = atomicAdd(numCurrFrontier, numCurrFrontier_s);
+    }
+    __syncthreads();
+    for (unsigned int currFrontierIdx_s = threadIdx.x; currFrontierIdx_s < numCurrFrontier_s; currFrontierIdx_s += blockDim.x)
+    {
+        currFrontier[currFrontierStartIdx + threadIdx.x] = currFrontier_s[currFrontierIdx_s];
     }
 }
 
