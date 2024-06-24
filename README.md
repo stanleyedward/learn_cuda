@@ -1,4 +1,7 @@
 # cudaing
+1-7: fundamentals of GPU computing
+8-19: parallel patterns
+20-23: advanced features
 
 ### Resources
 - [Programming Massively Parallel Processors - 3rd Edition](http://gpu.di.unimi.it/books/PMPP-3rd-Edition.pdf)
