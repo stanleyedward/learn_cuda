@@ -82,4 +82,12 @@ To over memory copies with the host execution asynchronous memory copies are use
 
 cudaEvents can be used to see how long a particular operation in a particular stream took.
 
+Newer GPUs support NVlink better than PCIe (peripheral component interconnect - express)
+
+PCIE
+- pcie bus has multiple lanes to copy to and from
+- one streams can be use multiple lanes while doing the copy.
+
+
+
 

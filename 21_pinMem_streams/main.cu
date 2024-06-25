@@ -45,11 +45,11 @@ int main(int argc, char **argv)
     stopTime(&timer);
     printElapsedTime(timer, "GPU time", DGREEN);
 
-    // vector addition on GPU with streams
-    startTime(&timer);
-    vecadd_gpu_streams(x, y, z, N);
-    stopTime(&timer);
-    printElapsedTime(timer, "GPU time", DGREEN);
+    // // vector addition on GPU with streams
+    // startTime(&timer);
+    // vecadd_gpu_streams(x, y, z, N);
+    // stopTime(&timer);
+    // printElapsedTime(timer, "GPU time", DGREEN);
 
     // free memory
     cudaFreeHost(x);

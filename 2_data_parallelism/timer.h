@@ -27,7 +27,8 @@ static void printElapsedTime(Timer timer, const char* s, enum PrintColor color =
         case DGREEN: printf("\033[0;32m"); break;
         case CYAN :  printf("\033[1;36m"); break;
     }
-    printf("%s: %f s\n", s, t);
+    // printf("%s: %f s\n", s, t); // for time in seconds
+    printf("%s: %f ms\n", s, t*1e3); //time in ms
     if(color != NONE) {
         printf("\033[0m");
     }
