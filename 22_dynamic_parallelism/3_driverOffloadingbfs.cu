@@ -56,38 +56,29 @@ __global__ void bfs_levels_kernel(CSRGraph csrGraph, unsigned int *level, unsign
 
     for (unsigned int currLevel = 1; numPrevFrontier > 0; ++currLevel)
     {
-        cudaMemset(numCurrFrontier, 0, sizeof(unsigned int));
+        // cudaMemset(numCurrFrontier, 0, sizeof(unsigned int));
+        *numCurrFrontier = 0; // as we executing on the GPU we dont need cudaMemset or cudamemcpy
         unsigned int numBlocks = (numPrevFrontier + numThreadsPerBlock - 1) / numThreadsPerBlock;
         bfs_kernel<<<numBlocks, numThreadsPerBlock>>>(csrGraph, level, prevFrontier, currFrontier, numPrevFrontier, numCurrFrontier, currLevel);
+
+        // kernel calls are async, before kernelcall and cudamemcpy went into the same stream so the cudamemcpy waited for it to exec.
+        // so we dont have the gaurentee the jernel finishes therefore
+        cudaDeviceSynchronize();
 
         // swap buffers
         unsigned int *tmp = prevFrontier;
         prevFrontier = currFrontier;
         currFrontier = tmp;
-        cudaMemcpy(&numPrevFrontier, numCurrFrontier, sizeof(unsigned int), cudaMemcpyDeviceToHost);
+        // cudaMemcpy(&numPrevFrontier, numCurrFrontier, sizeof(unsigned int), cudaMemcpyDeviceToHost);
+        numPrevFrontier = *numCurrFrontier;
     }
-    cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();// for the CPU to wait for the whoole thing to finish
 }
 
 void bfs_levels(CSRGraph csrGraph, unsigned int *level, unsigned int *prevFrontier, unsigned int *currFrontier, unsigned int *numCurrFrontier)
 {
-
-    unsigned int numPrevFrontier = 1;
-    unsigned int numThreadsPerBlock = 256;
-    // cudaDeviceSetLimit(cudaLimitDevRuntimePendingLaunchCount, csrGraph.numVertices);
-
-    for (unsigned int currLevel = 1; numPrevFrontier > 0; ++currLevel)
-    {
-        cudaMemset(numCurrFrontier, 0, sizeof(unsigned int));
-        unsigned int numBlocks = (numPrevFrontier + numThreadsPerBlock - 1) / numThreadsPerBlock;
-        bfs_kernel<<<numBlocks, numThreadsPerBlock>>>(csrGraph, level, prevFrontier, currFrontier, numPrevFrontier, numCurrFrontier, currLevel);
-
-        // swap buffers
-        unsigned int *tmp = prevFrontier;
-        prevFrontier = currFrontier;
-        currFrontier = tmp;
-        cudaMemcpy(&numPrevFrontier, numCurrFrontier, sizeof(unsigned int), cudaMemcpyDeviceToHost);
-    }
+    cudaDeviceSetLimit(cudaLimitDevRuntimePendingLaunchCount, csrGraph.numVertices);
+    bfs_levels_kernel<<<1,1>>>(csrGraph,level, prevFrontier, currFrontier, numCurrFrontier);
     cudaDeviceSynchronize();
 }
 

@@ -38,9 +38,8 @@ device code for calling a kernel to launch a grid is same as the host code
 ```c
 cudaDeviceSetLimit(cudaLimitDevRuntimePendingLaunchCount, <new limit>);
 ```
+results:
 
-
-### results
 performance was actually worse 
 - why? the grids might have new low amount of neighbours therefore these grids are relatively small, + we have a large amount of grids
 
@@ -70,12 +69,28 @@ solution:
 - aggregates launches (complicated):
     - one thread collect the work of multiple threads and launch a single grid on their behalf.
 
-### results 
+results:
+
 performs much better
 - as we just serualize if the no of neighbours are low.
 
 ### Offloading driver code using DP
 - host code that drives the computation launches multiple consecutive grids to sync across all threads between launches. eg in our bfs host code
 - therefore we can offload the driver code to the device, so we free up the host to do other things
+
+result: this optimization actually makes the kernel time take more as it offloads the CPUs work to the GPU.
+- its only 1 thread, and cpu is latency driven.
+- its only useful to freeup the host to do other things, by offloading the work to the GPU.
+
+### Memory Visibility
+operations on global memeory made by parent thread before the launch are visible to the child
+    - operations made by the child are visible to the parent after the child returns and synchronizes.
+
+- thread's local memory and a block's shared memory cannot be accessed by child threads.
+    - as they may run on of different SM.
+
+### nesting depth
+how deeply dynamically launches grids may launch other grids.
+- limited by the hardware (typical value = 24).
 
 
