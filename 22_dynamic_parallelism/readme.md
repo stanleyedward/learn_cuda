@@ -70,4 +70,12 @@ solution:
 - aggregates launches (complicated):
     - one thread collect the work of multiple threads and launch a single grid on their behalf.
 
-### results perform much betters
+### results 
+performs much better
+- as we just serualize if the no of neighbours are low.
+
+### Offloading driver code using DP
+- host code that drives the computation launches multiple consecutive grids to sync across all threads between launches. eg in our bfs host code
+- therefore we can offload the driver code to the device, so we free up the host to do other things
+
+
