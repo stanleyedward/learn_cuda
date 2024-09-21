@@ -1,0 +1,16 @@
+
+# Binaries
+
+vecmax
+mm
+mm-tiled
+convolution
+reduction
+scan
+histogram
+# .o files
+
+*.o
+
+
+
