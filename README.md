@@ -11,3 +11,4 @@
 - [An Even Easier Introduction to CUDA](https://developer.nvidia.com/blog/even-easier-introduction-cuda/)
 - [RTFM](https://docs.nvidia.com/cuda/)
 - [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
+- [cuda programming - freecodecamp](https://github.com/Infatoshi/cuda-course.git)
