@@ -12,3 +12,7 @@
 - [RTFM](https://docs.nvidia.com/cuda/)
 - [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
 - [cuda programming - freecodecamp](https://github.com/Infatoshi/cuda-course.git)
+
+
+#### MISC
+- https://chatgpt.com/share/6787c204-ec34-8012-8fd9-790b8258bf6b
